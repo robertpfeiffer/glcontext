@@ -70,7 +70,7 @@ ext_modules = {
     'windows': [wgl],
     'linux': [x11, egl],
     'darwin': [darwin],
-    'android': [sdl2]
+    'android': [sdl2, egl]
 }
 if '--with-sdl2' in sys.argv:
     sys.argv.remove('--with-sdl2')
