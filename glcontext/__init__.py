@@ -19,7 +19,7 @@ def default_backend():
     Returns:
         A backend object for creating and/or detecting context
     """
-    PLATFORMS = {'windows', 'linux', 'darwin'}
+    PLATFORMS = {'windows', 'linux', 'darwin', 'android'}
 
     import platform
     target = platform.system().lower()
@@ -40,6 +40,9 @@ def default_backend():
     if target == 'darwin':
         return _darwin()
 
+    if target == 'android':
+        return _sdl2()
+
     raise ValueError("Cannot find suitable default backend")
 
 
@@ -47,6 +50,18 @@ def get_backend_by_name(name: str):
     """Request a specific backend by name"""
     if name == 'egl':
         return _egl()
+
+    if name == 'wgl':
+        return _wgl()
+
+    if name == 'cgl':
+        return _darwin()
+
+    if name == 'glx':
+        return _x11()
+
+    if name == 'sdl2':
+        return _sdl2()
 
     raise ValueError("Cannot find supported backend: '{}'".format(name))
 
@@ -77,6 +92,14 @@ def _x11():
 
     return create
 
+def _sdl2():
+    """Create darwin/cgl context"""
+    from glcontext import sdl2
+
+    def create(*args, **kwargs):
+        return sdl2.create_context()
+
+    return create
 
 def _darwin():
     """Create darwin/cgl context"""

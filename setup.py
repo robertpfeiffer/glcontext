@@ -1,8 +1,8 @@
-import platform
+import platform, sys
 
 from setuptools import Extension, setup
 
-PLATFORMS = {'windows', 'linux', 'darwin'}
+PLATFORMS = {'windows', 'linux', 'darwin', 'android'}
 
 target = platform.system().lower()
 
@@ -12,6 +12,10 @@ for known in PLATFORMS:
 
 if target not in PLATFORMS:
     target = 'linux'
+
+if '--android' in sys.argv:
+    target='android'
+    sys.argv.remove('--android')
 
 if target == 'darwin':
     import os
@@ -26,6 +30,7 @@ if target == 'darwin':
 wgl = Extension(
     name='glcontext.wgl',
     sources=['glcontext/wgl.cpp'],
+    language="c++",
     libraries=['user32', 'gdi32'],
 )
 
@@ -33,13 +38,23 @@ x11 = Extension(
     name='glcontext.x11',
     sources=['glcontext/x11.cpp'],
     extra_compile_args=['-fpermissive'],
+    language="c++",
     libraries=['dl'],
+)
+
+sdl2 = Extension(
+    name='glcontext.sdl2',
+    sources=['glcontext/sdl2.cpp'],
+    extra_compile_args=['-fpermissive'],
+    language="c++",
+    libraries=['SDL2'],
 )
 
 egl = Extension(
     name='glcontext.egl',
     sources=['glcontext/egl.cpp'],
     extra_compile_args=['-fpermissive'],
+    language="c++",
     libraries=['dl'],
 )
 
@@ -47,6 +62,7 @@ darwin = Extension(
     name='glcontext.darwin',
     sources=['glcontext/darwin.cpp'],
     extra_compile_args=['-fpermissive', '-Wno-deprecated-declarations'],
+    language="c++",
     extra_link_args=['-framework', 'OpenGL', '-Wno-deprecated'],
 )
 
@@ -54,7 +70,13 @@ ext_modules = {
     'windows': [wgl],
     'linux': [x11, egl],
     'darwin': [darwin],
+    'android': [sdl2]
 }
+if '--with-sdl2' in sys.argv:
+    sys.argv.remove('--with-sdl2')
+    for platform in ext_modules:
+        if sdl2 not in ext_modules[platform]:
+            ext_modules[platform].append(sdl2)
 
 setup(
     name='glcontext',
